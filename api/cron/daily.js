@@ -3,7 +3,7 @@
 // 2. Sender e-post med vinneren til ADMIN_EMAIL (og til vinneren hvis NOTIFY_WINNER=true).
 // 3. Sender påminnelse om dagens luke til alle som har trykket «Varsle meg» (hvis SEND_REMINDERS=true).
 // Trygg å kjøre flere ganger: ingen luke trekkes to ganger og ingen påminnelse sendes to ganger.
-import { db, sendEmail, sendBatch, osloDate, drawDay, requireEnv, flag, cronAuthorized, YEAR, listUnsub } from "../_lib.js";
+import { db, sendEmail, sendBatch, osloDate, drawDay, requireEnv, flag, cronAuthorized, YEAR, listUnsub, getPrize } from "../_lib.js";
 import { adminDrawEmail, winnerEmail, reminderEmail, withUnsub } from "../_emails.js";
 
 export const config = { maxDuration: 300 };
@@ -50,9 +50,19 @@ async function drawDue(day) {
       body: { p_door: door, p_exclude_previous: !flag("ALLOW_REPEAT_WINNERS") }
     });
     const winner = w && w.door ? w : null;
-    results.push({ door, winner });
-    if (winner && flag("NOTIFY_WINNER")) {
-      await sendEmail({ to: winner.email, ...winnerEmail({ door, name: winner.display_name }) });
+    const p = await getPrize(door);
+    const r = { door, winner, prize: p, sent: false };
+    results.push(r);
+    if (!winner) continue;
+    if (!flag("NOTIFY_WINNER")) { r.reason = "Automatisk vinner-e-post er slått av (NOTIFY_WINNER). Send gavekortet manuelt."; continue; }
+    if (!p?.code) { r.reason = "Mangler gavekortkode for luka. Vinneren har ikke fått e-post, så send gavekortet manuelt."; continue; }
+    try {
+      await sendEmail({ to: winner.email, ...winnerEmail({ door, name: winner.display_name, p }) });
+      await db(`prizes?door=eq.${door}`, { method: "PATCH", body: { code_sent_at: new Date().toISOString() } });
+      r.sent = true;
+    } catch (e) {
+      console.error(e);
+      r.reason = "E-posten til vinneren feilet. Send gavekortet manuelt.";
     }
   }
 
@@ -77,8 +87,9 @@ async function sendReminder(door) {
     if (page.length < 1000) break;
   }
 
+  const p = await getPrize(door);
   const sent = await sendBatch(emails.map(email => ({
-    to: email, ...withUnsub(reminderEmail({ door, email }), email), headers: listUnsub(email)
+    to: email, ...withUnsub(reminderEmail({ door, email, p }), email), headers: listUnsub(email)
   })));
   await db(`reminders?door=eq.${door}`, { method: "PATCH", body: { sent } });
   return { sent };

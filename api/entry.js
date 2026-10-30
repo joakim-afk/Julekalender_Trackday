@@ -1,6 +1,6 @@
 // Tar imot påmeldinger fra kalenderen (type "entry") og «Varsle meg» (type "notify"),
 // lagrer dem i Supabase og sender bekreftelse på e-post med en gang.
-import { db, sendEmail, readBody, emailOk, todayDoor, requireEnv, flag, listUnsub } from "./_lib.js";
+import { db, sendEmail, readBody, emailOk, todayDoor, requireEnv, flag, listUnsub, getPrize } from "./_lib.js";
 import { entryEmail, notifyEmail, withUnsub } from "./_emails.js";
 
 const GRACE_MS = 5 * 60 * 1000; // godtar gårsdagens luke i 5 minutter etter midnatt
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
         referrer: clip(b.referrer, 500), page: clip(b.page, 500)
       }
     });
-    if (rows.length) await trySend({ to: email, ...entryEmail({ door, name }) });
+    if (rows.length) await trySend({ to: email, ...entryEmail({ door, name, p: await getPrize(door) }) });
     return res.status(200).json({ ok: true, duplicate: !rows.length });
   } catch (e) {
     console.error(e);

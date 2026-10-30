@@ -1,11 +1,12 @@
 // E-postmaler. Endre tekstene her.
-import { esc, prizeText, PRIZES, drawText, SITE_URL, GIFTCARD_URL, unsubUrl } from "./_lib.js";
+import { esc, prizeText, PRIZES, kr, drawText, SITE_URL, GIFTCARD_URL, unsubUrl } from "./_lib.js";
 
 const LOGO = process.env.EMAIL_LOGO_URL ||
   "https://www.trackday.no/static/version1790664050/frontend/Trackday/ultimo_child/nb_NO/images/logo.png";
 
-// «en kjøreopplevelse verdt 500 kr», eller premieteksten hvis premien er en tekst
-const prize = door => typeof PRIZES[door - 1] === "number" ? `en kjøreopplevelse verdt ${prizeText(door)}` : prizeText(door);
+// Premien fra arket («Lamborghini, 3 runder (verdi 2 500 kr)»), ellers «en kjøreopplevelse verdt 500 kr»
+const prize = (door, p) => p?.title ? `${p.title}${p.value ? ` (verdi ${kr(p.value)})` : ""}`
+  : typeof PRIZES[door - 1] === "number" ? `en kjøreopplevelse verdt ${prizeText(door)}` : prizeText(door);
 
 function layout({ preheader, title, body, button, footer = "" }) {
   return `<!doctype html><html lang="no"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title></head>
@@ -22,7 +23,7 @@ ${button ? `<tr><td style="padding:20px 28px 8px"><a href="${button.href}" style
 </table></td></tr></table></body></html>`;
 }
 
-export function entryEmail({ door, name }) {
+export function entryEmail({ door, name, p }) {
   const hi = name ? `Hei ${esc(name)}!` : "Hei!";
   const when = drawText(door);
   const next = door < 24
@@ -32,15 +33,15 @@ export function entryEmail({ door, name }) {
   return {
     subject,
     html: layout({
-      preheader: `Vinn ${prize(door)}. Vinneren trekkes ${when}.`,
+      preheader: `Vinn ${prize(door, p)}. Vinneren trekkes ${when}.`,
       title: subject,
       body: `<p>${hi}</p>
-<p>Du er med i trekningen av <b>${esc(prize(door))}</b> bak luke ${door}.
+<p>Du er med i trekningen av <b>${esc(prize(door, p))}</b> bak luke ${door}.
 Vinneren trekkes <b>${when}</b> og får beskjed på denne e-postadressen.</p>
 <p>${next}</p>`,
       button: { label: "Til kalenderen", href: SITE_URL }
     }),
-    text: `${hi}\n\nDu er med i trekningen av ${prize(door)} bak luke ${door}. ` +
+    text: `${hi}\n\nDu er med i trekningen av ${prize(door, p)} bak luke ${door}. ` +
           `Vinneren trekkes ${when} og får beskjed på denne e-postadressen.\n\n${next}\n\n${SITE_URL}`
   };
 }
@@ -61,55 +62,71 @@ export function notifyEmail({ email }) {
   };
 }
 
-export function reminderEmail({ door, email }) {
-  const subject = `${door === 24 ? "Siste luke" : `Luke ${door}`} er åpen: vinn ${prize(door)}`;
+export function reminderEmail({ door, email, p }) {
+  const subject = `${door === 24 ? "Siste luke" : `Luke ${door}`} er åpen: vinn ${prize(door, p)}`;
   return {
     subject,
     html: layout({
       preheader: `Bli med i trekningen i dag. Luka stenger kl. 23:59.`,
       title: `Luke ${door} er åpen`,
-      body: `<p>Bak dagens luke ligger <b>${esc(prize(door))}</b>.
+      body: `<p>Bak dagens luke ligger <b>${esc(prize(door, p))}</b>.
 Luka er åpen til kl. 23:59 i kveld, og vinneren trekkes ${drawText(door)}.</p>`,
       button: { label: `Åpne luke ${door}`, href: `${SITE_URL}/?utm_source=julekalender&utm_medium=email&utm_campaign=paaminnelse&utm_content=luke${door}` },
       footer: unsubFooter(email)
     }),
-    text: `Luke ${door} er åpen! Bak dagens luke ligger ${prize(door)}. ` +
+    text: `Luke ${door} er åpen! Bak dagens luke ligger ${prize(door, p)}. ` +
           `Luka er åpen til kl. 23:59 i kveld.\n\n${SITE_URL}\n\nMeld deg av påminnelsene: {{unsub}}`
   };
 }
 
-export function winnerEmail({ door, name }) {
+export function winnerEmail({ door, name, p }) {
   const subject = `Gratulerer! Du vant luke ${door} i Trackday Julekalender`;
+  const hi = name ? `Hei ${esc(name)}! ` : "";
+  const code = p?.code;
+  const details = code ? [
+    ["Gavekortkode", code],
+    p.valid_until && ["Gyldig til", p.valid_until],
+    p.redeem_url && ["Løs inn her", p.redeem_url]
+  ].filter(Boolean) : [];
+  const box = details.length ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#0d0e11;border:1px solid #f5c542;border-radius:12px;width:100%">
+${details.map(([k, v]) => `<tr><td style="padding:10px 14px;color:#8a8f99;font-size:13px;white-space:nowrap">${k}</td><td style="padding:10px 14px;font-size:${k === "Gavekortkode" ? 20 : 15}px;font-weight:bold;color:#fff;font-family:${k === "Gavekortkode" ? "Courier New,monospace" : "Arial,sans-serif"}">${k === "Løs inn her" ? `<a href="${esc(v)}" style="color:#ff5a4f">${esc(v)}</a>` : esc(v)}</td></tr>`).join("")}
+</table>` : "";
+  const after = code
+    ? "Ta vare på koden. Den er personlig og kan bare brukes én gang."
+    : "Vi sender gavekortet til denne e-postadressen i løpet av kort tid.";
   return {
     subject,
     html: layout({
-      preheader: `Du vant ${prize(door)}.`,
+      preheader: `Du vant ${prize(door, p)}.`,
       title: "Gratulerer, du vant!",
-      body: `<p>${name ? `Hei ${esc(name)}! ` : ""}Du er trukket ut som vinner av luke ${door} og har vunnet et
-<b>gavekort på ${esc(prize(door))}</b>.</p>
-<p>Vi sender gavekortet til denne e-postadressen i løpet av kort tid. Gavekortet gjelder i 365 dager.</p>`,
-      button: { label: "Se hva du kan bruke det på", href: GIFTCARD_URL }
+      body: `<p>${hi}Du er trukket ut som vinner av luke ${door} i Trackday Julekalender og har vunnet et gavekort på
+<b>${esc(prize(door, p))}</b>.</p>${p?.description ? `<p>${esc(p.description)}</p>` : ""}
+${box}<p>${after}</p>`,
+      button: p?.redeem_url && code ? { label: "Løs inn gavekortet", href: p.redeem_url } : { label: "Se kjøreopplevelsene", href: GIFTCARD_URL }
     }),
-    text: `Gratulerer! Du er trukket ut som vinner av luke ${door} og har vunnet et gavekort på ${prize(door)}. ` +
-          `Vi sender gavekortet til denne e-postadressen i løpet av kort tid.`
+    text: `Gratulerer! Du er trukket ut som vinner av luke ${door} og har vunnet et gavekort på ${prize(door, p)}.\n\n` +
+          details.map(([k, v]) => `${k}: ${v}`).join("\n") + (details.length ? "\n\n" : "") + after
   };
 }
 
 export function adminDrawEmail(results) {
-  const rows = results.map(r => r.winner
-    ? `<tr><td style="padding:6px 10px">Luke ${r.door}</td><td style="padding:6px 10px">${esc(prizeText(r.door))}</td><td style="padding:6px 10px"><b>${esc(r.winner.email)}</b>${r.winner.display_name ? " (" + esc(r.winner.display_name) + ")" : ""}</td><td style="padding:6px 10px">${r.winner.entries ?? ""} påmeldte</td></tr>`
-    : `<tr><td style="padding:6px 10px">Luke ${r.door}</td><td style="padding:6px 10px">${esc(prizeText(r.door))}</td><td colspan="2" style="padding:6px 10px">Ingen påmeldinger, ingen vinner trukket</td></tr>`).join("");
-  const plain = results.map(r => `Luke ${r.door} (${prizeText(r.door)}): ` +
-    (r.winner ? `${r.winner.email}${r.winner.display_name ? " (" + r.winner.display_name + ")" : ""}, ${r.winner.entries ?? "?"} påmeldte` : "ingen påmeldinger")).join("\n");
+  const td = v => `<td style="padding:6px 10px;vertical-align:top">${v}</td>`;
+  const status = r => r.sent ? "Gavekortkoden er sendt til vinneren automatisk."
+    : r.reason || "Send gavekortet til vinneren manuelt.";
+  const rows = results.map(r => `<tr>${td(`Luke ${r.door}`)}${td(esc(prize(r.door, r.prize)))}${r.winner
+    ? td(`<b>${esc(r.winner.email)}</b>${r.winner.display_name ? " (" + esc(r.winner.display_name) + ")" : ""}<br>${r.winner.entries ?? "?"} påmeldte`) + td(esc(status(r)))
+    : `<td colspan="2" style="padding:6px 10px">Ingen påmeldinger, ingen vinner trukket</td>`}</tr>`).join("");
+  const plain = results.map(r => `Luke ${r.door} (${prize(r.door, r.prize)}): ` +
+    (r.winner ? `${r.winner.email}${r.winner.display_name ? " (" + r.winner.display_name + ")" : ""}, ${r.winner.entries ?? "?"} påmeldte. ${status(r)}` : "ingen påmeldinger")).join("\n");
+  const note = "Navnet som vises på vinnersiden kan endres i Supabase (tabellen winners, kolonnene display_name og place).";
   return {
     subject: `Julekalender: vinner trukket for ${results.map(r => "luke " + r.door).join(", ")}`,
     html: layout({
       preheader: "Ny vinner er trukket.",
       title: "Vinner trukket",
-      body: `<table style="border-collapse:collapse;color:#f2f2f2;font-size:14px">${rows}</table>
-<p>Neste steg: send gavekortet til vinneren. Navnet som vises på vinnersiden kan endres i Supabase (tabellen <i>winners</i>, kolonnene display_name og place).</p>`
+      body: `<table style="border-collapse:collapse;color:#f2f2f2;font-size:14px">${rows}</table><p>${note}</p>`
     }),
-    text: plain + "\n\nSend gavekortet til vinneren. Navnet på vinnersiden endres i Supabase, tabellen winners."
+    text: plain + "\n\n" + note
   };
 }
 

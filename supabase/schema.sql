@@ -48,6 +48,20 @@ create table if not exists reminders (
   sent     integer
 );
 
+-- Premier og gavekortkoder, én rad per luke. Fylles fra Google-arket (se supabase/premier-import.sql).
+-- Kodene leses bare av serveren og sendes kun til vinneren.
+create table if not exists prizes (
+  door         smallint primary key check (door between 1 and 24),
+  title        text,
+  description  text,
+  value        integer,
+  code         text,
+  valid_until  text,
+  redeem_url   text,
+  code_sent_at timestamptz
+);
+alter table prizes enable row level security;
+
 alter table entries     enable row level security;
 alter table subscribers enable row level security;
 alter table winners     enable row level security;

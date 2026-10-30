@@ -10,6 +10,19 @@ export const GIFTCARD_URL = process.env.GIFTCARD_URL || "https://www.trackday.no
 export const PRIZES = [500,1000,500,1500,1000,2000,500,1000,2500,1000,1500,3000,
                        500,1000,2000,1500,2500,1000,3000,2000,1500,5000,2500,10000];
 
+// Premien for en luke fra tabellen prizes (null hvis den ikke er lagt inn ennå)
+export async function getPrize(door) {
+  try {
+    const rows = await db(`prizes?door=eq.${door}&select=*`);
+    return rows[0] || null;
+  } catch (e) {
+    console.error("Kunne ikke hente premie:", e.message);
+    return null;
+  }
+}
+
+export const kr = v => `${Number(v).toLocaleString("nb-NO").replace(/\s/g, "\u00a0")} kr`;
+
 export const prizeText = n => {
   const p = PRIZES[n - 1];
   return typeof p === "number" ? `${p.toLocaleString("nb-NO").replace(/\s/g, " ")} kr` : String(p);

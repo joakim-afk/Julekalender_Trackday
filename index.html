@@ -876,6 +876,9 @@ function openModal(n){
   $("#mLead").textContent = n===24
     ? "Den største luka i kalenderen. Et gavekort som holder til en skikkelig dag på banen. Legg igjen e-posten din og bli med i trekningen."
     : `Bak luke ${n} ligger et gavekort på en kjøreopplevelse. Vinneren velger selv bil og opplevelse, enten bak rattet eller på passasjersetet med en racingsjåfør.`;
+  const info = PRIZE_INFO[n];
+  if(info && info.title) $("#mTitle").textContent = info.title;
+  if(info && info.description) $("#mLead").textContent = info.description + " Legg igjen e-posten din og bli med i trekningen.";
   $("#mFine").textContent = CONFIG.drawInfo;
   const form = $("#entryForm");
   form.reset();
@@ -1063,6 +1066,13 @@ function confetti(){
 
 const esc = v => String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let WINNERS = {};
+/* Premienavn og beskrivelser fra premiearket (api/prizes.js). Uten dem brukes CONFIG.prizes. */
+let PRIZE_INFO = {};
+if(CONFIG.endpoint) fetch("/api/prizes").then(r=>r.ok?r.json():[]).then(rows=>{
+  (rows||[]).forEach(p=>{ if(p.door>=1 && p.door<=24){ PRIZE_INFO[p.door]=p; if(p.value) CONFIG.prizes[p.door-1]=p.value; } });
+  if(rows && rows.length){ render(); renderWinners(); }
+}).catch(()=>{});
+
 loadWinners().then(w=>{
   WINNERS = w; render(); renderWinners();
   const nums = Object.keys(w).map(Number).sort((a,b)=>b-a);

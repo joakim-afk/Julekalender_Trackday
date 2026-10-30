@@ -62,6 +62,15 @@ Samme person kan som standard bare vinne én gang. Vinneren trekkes tilfeldig bl
 
 Tips: `?dag=12` i nettleseren viser hvordan kalenderen ser ut 12. desember (bare visning, påmeldinger følger ekte dato).
 
+## Premier og gavekortkoder
+
+Premiene fylles ut i Google-arket «Trackday Julekalender 2026 – premier og gavekortkoder» (én rad per luke: premie, beskrivelse, verdi, gavekortkode, gyldig til og lenke for innløsing) og legges inn i tabellen `prizes` i Supabase.
+
+- Lukene på nettsiden viser premienavn, beskrivelse og verdi fra tabellen (via `api/prizes.js`). Kodene sendes aldri til nettleseren.
+- Når en vinner trekkes og `NOTIFY_WINNER=true`, får vinneren en e-post med gavekortkoden med en gang. Tidspunktet lagres i `prizes.code_sent_at`.
+- Mangler koden for en luke, sendes ingen e-post til vinneren, og admin-e-posten sier at gavekortet må sendes manuelt.
+- Har databasen blitt satt opp før premietabellen fantes, kjører du `supabase/premier.sql` én gang.
+
 ## Underveis i kampanjen
 
 - **Følge med:** Supabase → Table Editor → `entries_per_door` viser antall påmeldinger per luke.
@@ -82,7 +91,7 @@ Tips: `?dag=12` i nettleseren viser hvordan kalenderen ser ut 12. desember (bare
 | `CRON_SECRET` | Lang tilfeldig tekst som beskytter den daglige jobben |
 | `SITE_URL` | `https://julekalender.trackday.no` |
 | `SEND_REMINDERS` | `true` sender daglig påminnelse til «Varsle meg»-listen |
-| `NOTIFY_WINNER` | `true` sender «Gratulerer»-e-post til vinneren automatisk. `false` betyr at dere kontakter vinneren selv |
+| `NOTIFY_WINNER` | `true` sender vinneren e-post med gavekortkoden automatisk. `false` betyr at dere kontakter vinneren selv |
 | `ALLOW_REPEAT_WINNERS` | `true` lar samme person vinne flere luker |
 | `ALLOW_ANY_DOOR` | `true` lar alle luker ta imot påmeldinger. **Kun for testing** |
 | `LAST_DRAW_DAY` | Datoen i desember luke 24 trekkes. Standard 27 |

@@ -281,6 +281,14 @@ h1 .gold{color:var(--gold);text-shadow:0 0 34px rgba(245,197,66,.35)}
 .cal-wrap.pre .calendar{min-height:500px;align-content:center}
 .prelaunch{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;padding:16px}
 .prelaunch[hidden]{display:none}
+/* Før lansering: hele siden er uskarp, og bare påmeldingsboksen ligger skarpt midt på skjermen */
+body.pl-mode{overflow:hidden}
+body.pl-mode > .wrap, body.pl-mode > footer, body.pl-mode > .drift,
+body.pl-mode > .checker, body.pl-mode > .lights{filter:blur(9px);pointer-events:none;user-select:none}
+body.pl-mode .prelaunch{position:fixed;z-index:50;background:rgba(8,9,11,.45);overflow-y:auto;align-items:flex-start}
+body.pl-mode .pl-box{margin:auto}
+.pl-logo{height:34px;width:auto;margin-bottom:2px}
+.pl-logo[hidden]{display:none}
 .pl-box{
   max-width:600px;width:100%;text-align:center;padding:30px 26px 28px;border-radius:22px;
   background:linear-gradient(180deg,rgba(26,28,34,.94),rgba(15,16,20,.96));border:1px solid #343844;
@@ -517,6 +525,7 @@ footer a{color:#d0d3d9}
     <div class="calendar" id="calendar"></div>
     <div class="prelaunch" id="prelaunch" hidden>
       <div class="pl-box">
+        <img class="pl-logo" id="plLogo" alt="Trackday" hidden>
         <span class="pl-kicker">★ Åpner 1. desember</span>
         <h3>Kalenderen åpner om</h3>
         <div class="digits pl-digits">
@@ -780,6 +789,7 @@ if(CONFIG.logoUrl){
   const fb = `this.parentNode.innerHTML='<span class=&quot;logo-dot&quot;></span><span class=&quot;logo-text&quot;>TRACKDAY</span>'`;
   $("#logo").innerHTML = `<img src="${CONFIG.logoUrl}" alt="Trackday" onerror="${fb}">`;
 }
+if(CONFIG.logoUrl){ const l=$("#plLogo"); l.onload=()=>l.hidden=false; l.src=CONFIG.logoUrl; }
 document.querySelectorAll(".gc-link").forEach(a=>a.href=CONFIG.giftcardUrl);
 $("#logo").href = CONFIG.siteUrl;
 $("#rulesLink").href = CONFIG.rulesUrl;
@@ -978,11 +988,14 @@ $("#shareBtn").onclick = async ()=>{
 let tt; function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2600)}
 
 /* Nedtelling */
-/* Før lansering: blur lukene og vis nedteller over kalenderen. ?preview hopper over. */
+/* Før lansering: blur hele siden og vis nedteller og påmelding midt på skjermen. ?preview hopper over. */
 function setPrelaunch(){
   const pre = todayDoor()===0 && !params.has("preview");
+  const pl = $("#prelaunch");
+  if(pre && pl.parentNode!==document.body) document.body.appendChild(pl); // ut av det som blurres
   $("#calWrap").classList.toggle("pre", pre);
-  $("#prelaunch").hidden = !pre;
+  document.body.classList.toggle("pl-mode", pre);
+  pl.hidden = !pre;
 }
 function tick(){
   const t = oslo(), door = todayDoor();

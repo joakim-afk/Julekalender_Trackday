@@ -1,0 +1,6 @@
+{
+  "name": "trackday-julekalender",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" }
+}

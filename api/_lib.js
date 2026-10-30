@@ -109,7 +109,8 @@ export function readBody(req) {
   return {};
 }
 
+// Vercel Cron sender hemmeligheten som Bearer-header. For manuell testing i nettleser går også ?key=<CRON_SECRET>.
 export function cronAuthorized(req) {
   const secret = process.env.CRON_SECRET;
-  return !!secret && req.headers.authorization === `Bearer ${secret}`;
+  return !!secret && (req.headers.authorization === `Bearer ${secret}` || req.query?.key === secret);
 }

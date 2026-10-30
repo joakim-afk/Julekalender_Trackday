@@ -55,7 +55,7 @@ Samme person kan som standard bare vinne én gang. Vinneren trekkes tilfeldig bl
 2. Åpne `https://julekalender.trackday.no/?preview`. Da kan alle luker åpnes. Meld deg på et par luker med din egen e-post, og sjekk at bekreftelsen kommer.
 3. Test trekningen ved å kalle jobben med en tenkt dato (her 3. desember, som trekker luke 1 og 2):
    ```
-   curl -H "Authorization: Bearer <CRON_SECRET>" "https://julekalender.trackday.no/api/cron/daily?dag=3"
+   https://julekalender.trackday.no/api/cron/daily?dag=3&key=<CRON_SECRET>
    ```
    Sjekk at dere får vinner-e-posten, og at vinneren vises på `/#vinnere`.
 4. **Før lansering:** sett `ALLOW_ANY_DOOR=false`, redeploy, og kjør `supabase/reset-etter-test.sql` i SQL Editor for å slette testdataene.
@@ -66,7 +66,7 @@ Tips: `?dag=12` i nettleseren viser hvordan kalenderen ser ut 12. desember (bare
 
 - **Følge med:** Supabase → Table Editor → `entries_per_door` viser antall påmeldinger per luke.
 - **Vinnernavn:** Vinnersiden viser fornavnet personen skrev inn. Endre det i tabellen `winners` (kolonnene `display_name` og `place`, f.eks. «Kari N.» og «Drammen»). Sett `published` til false for å skjule en vinner.
-- **Trekke på nytt** (f.eks. hvis vinneren ikke svarer): slett raden for luka i `winners`, og kjør jobben på nytt med curl-kommandoen over uten `?dag`.
+- **Trekke på nytt** (f.eks. hvis vinneren ikke svarer): slett raden for luka i `winners`, og åpne adressen over uten `dag=3&` (altså bare `?key=<CRON_SECRET>`).
 - **Nyhetsbrev:** `newsletter_optins` er alle som har sagt ja til nyhetsbrev. Eksporter som CSV og importer i nyhetsbrevverktøyet.
 - **Feil:** Vercel → Project → Logs viser alt API-et og jobben gjør.
 

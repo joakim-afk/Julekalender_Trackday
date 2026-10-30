@@ -542,7 +542,7 @@ footer a{color:#d0d3d9}
           <div class="digit"><span id="oM">00</span><small>MIN</small></div><div class="sep">:</div>
           <div class="digit"><span id="oS">00</span><small>SEK</small></div>
         </div>
-        <p>24 gavekort på kjøreopplevelser ligger klare bak lukene. Legg igjen e-posten din, så får du beskjed når den første åpner.</p>
+        <p id="plIntro">24 gavekort på kjøreopplevelser ligger klare bak lukene. Legg igjen e-posten din, så får du beskjed når den første åpner.</p>
         <form class="notify-form pl-form" id="plForm" novalidate>
           <input class="hp" type="text" name="company" tabindex="-1" autocomplete="off">
           <label class="sr" for="plEmail">E-postadresse</label>
@@ -983,6 +983,7 @@ function notifyDone(){
   $("#notify").innerHTML = `<div><h3>Du står på startstreken</h3><p>Vi sender deg beskjed når lukene åpner. Følg med i innboksen.</p></div><div class="gc-flag" style="width:90px;height:60px;justify-self:end"></div>`;
   const pf = $("#plForm");
   if(pf) pf.outerHTML = `<div class="pl-done"><b>Du står på startstreken!</b><span>Vi sender deg beskjed når luke 1 åpner.</span></div>`;
+  const pi = $("#plIntro"); if(pi) pi.hidden = true;
 }
 if(store.get("notified",false)) notifyDone();
 

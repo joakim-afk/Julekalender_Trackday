@@ -102,7 +102,9 @@ ${details.map(([k, v]) => `<tr><td style="padding:10px 14px;color:#8a8f99;font-s
       body: `<p>${hi}Du er trukket ut som vinner av luke ${door} i Trackday Julekalender og har vunnet
 <b>${esc(p?.title ? prize(door, p) : "et gavekort på " + prize(door, p))}</b>.</p>${p?.description ? `<p>${esc(p.description)}</p>` : ""}
 ${box}<p>${after}</p>`,
-      button: p?.redeem_url && code ? { label: "Løs inn gavekortet", href: p.redeem_url } : { label: "Se kjøreopplevelsene", href: GIFTCARD_URL }
+      button: p?.redeem_url && code ? { label: "Løs inn gavekortet", href: p.redeem_url }
+        : p?.link_url ? { label: "Se opplevelsen du har vunnet", href: p.link_url }
+        : { label: "Se kjøreopplevelsene", href: GIFTCARD_URL }
     }),
     text: `Gratulerer! Du er trukket ut som vinner av luke ${door} og har vunnet ${p?.title ? prize(door, p) : "et gavekort på " + prize(door, p)}.\n\n` +
           details.map(([k, v]) => `${k}: ${v}`).join("\n") + (details.length ? "\n\n" : "") + after

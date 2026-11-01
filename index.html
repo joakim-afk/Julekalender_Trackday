@@ -587,7 +587,7 @@ footer a{color:#d0d3d9}
       <p class="sub">Hver dag i desember trekker vi en vinner av et gavekort på en kjøreopplevelse. Her ser du hvem som har vunnet så langt.</p>
       <div class="w-stats">
         <div class="w-stat"><b id="sCount">0</b><span>av 24 trukket</span></div>
-        <div class="w-stat"><b id="sSum">0 kr</b><span>i premier totalt</span></div>
+        <div class="w-stat"><b>Hver dag</b><span>en ny kjøreopplevelse</span></div>
       </div>
     </section>
 
@@ -1097,10 +1097,7 @@ function renderWinners(){
   const W = WINNERS, today = todayDoor() || 0;
   const nums = Object.keys(W).map(Number).sort((a,b)=>a-b);
   const newest = nums[nums.length-1];
-  const total = CONFIG.prizes.reduce((s,v)=> s + (typeof v==="number" ? v : 0), 0);
   $("#sCount").textContent = nums.length;
-  // Viser samlet premieverdi (ikke hva som er igjen), så summen ikke krymper utover i desember
-  $("#sSum").textContent = `${fmt(total)} kr`;
   if(newest){
     const x = W[newest];
     $("#lName").textContent = x.navn;

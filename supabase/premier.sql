@@ -12,3 +12,7 @@ create table if not exists prizes (
   code_sent_at timestamptz
 );
 alter table prizes enable row level security;
+
+-- Bilde av bilen og lenke til opplevelsen (lagt til 1. november 2026)
+alter table prizes add column if not exists image_url text;
+alter table prizes add column if not exists link_url  text;

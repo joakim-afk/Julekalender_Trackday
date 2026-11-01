@@ -247,7 +247,7 @@ h1 .gold{color:var(--gold);text-shadow:0 0 34px rgba(245,197,66,.35)}
 .glow{animation:shimmer 3.2s ease-in-out infinite}
 @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.55}}
 .logo{position:relative}
-.logo .hat{position:absolute;width:34px;left:-14px;top:-20px;transform:rotate(-18deg);filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
+.logo .hat{position:absolute;width:19%;left:2%;top:-52%;transform:rotate(-14deg);transform-origin:30% 80%;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4));pointer-events:none}
 .kicker::before{content:"★ ";color:var(--gold)}
 .calendar::before{
   content:"";position:absolute;left:-3px;right:-3px;top:-13px;height:26px;z-index:4;pointer-events:none;
@@ -279,7 +279,6 @@ h1 .gold{color:var(--gold);text-shadow:0 0 34px rgba(245,197,66,.35)}
 @media (max-width:520px){
   .door .hat{width:30px;top:-14px;right:-5px}
   .door .rib-v{width:11px}.door .rib-h{height:11px}.door .bow{width:52px}
-  .logo .hat{width:28px;left:-11px;top:-16px}
 }
 
 /* før lansering: uskarpe luker og nedteller */
@@ -588,8 +587,7 @@ footer a{color:#d0d3d9}
       <p class="sub">Hver dag i desember trekker vi en vinner av et gavekort på en kjøreopplevelse. Her ser du hvem som har vunnet så langt.</p>
       <div class="w-stats">
         <div class="w-stat"><b id="sCount">0</b><span>av 24 trukket</span></div>
-        <div class="w-stat"><b id="sSum">0 kr</b><span>delt ut</span></div>
-        <div class="w-stat"><b id="sLeft">0 kr</b><span>igjen å vinne</span></div>
+        <div class="w-stat"><b id="sSum">0 kr</b><span>i premier totalt</span></div>
       </div>
     </section>
 
@@ -1099,11 +1097,10 @@ function renderWinners(){
   const W = WINNERS, today = todayDoor() || 0;
   const nums = Object.keys(W).map(Number).sort((a,b)=>a-b);
   const newest = nums[nums.length-1];
-  const sum = nums.reduce((s,n)=> s + (typeof CONFIG.prizes[n-1]==="number" ? CONFIG.prizes[n-1] : 0), 0);
   const total = CONFIG.prizes.reduce((s,v)=> s + (typeof v==="number" ? v : 0), 0);
   $("#sCount").textContent = nums.length;
-  $("#sSum").textContent = `${fmt(sum)} kr`;
-  $("#sLeft").textContent = `${fmt(total-sum)} kr`;
+  // Viser samlet premieverdi (ikke hva som er igjen), så summen ikke krymper utover i desember
+  $("#sSum").textContent = `${fmt(total)} kr`;
   if(newest){
     const x = W[newest];
     $("#lName").textContent = x.navn;

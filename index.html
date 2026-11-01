@@ -63,7 +63,7 @@ body::before{
 
 header{padding:28px 0 8px;text-align:center}
 .logo{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--white)}
-.logo img{height:56px;width:auto;display:block}
+.logo img{height:76px;width:auto;display:block;margin:-14px 0 -6px -8px}
 .logo-text{font-family:"Russo One",sans-serif;font-size:22px;letter-spacing:.18em}
 .logo-dot{width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 14px var(--red)}
 
@@ -294,7 +294,7 @@ body.pl-mode > .wrap, body.pl-mode > footer, body.pl-mode > .drift,
 body.pl-mode > .checker, body.pl-mode > .lights{filter:blur(9px);pointer-events:none;user-select:none}
 body.pl-mode .prelaunch{position:fixed;z-index:50;background:rgba(8,9,11,.45);overflow-y:auto;align-items:flex-start}
 body.pl-mode .pl-box{margin:auto}
-.pl-logo{height:34px;width:auto;margin-bottom:2px}
+.pl-logo{height:48px;width:auto;margin-bottom:2px}
 .pl-logo[hidden]{display:none}
 .pl-box{
   max-width:600px;width:100%;text-align:center;padding:30px 26px 28px;border-radius:22px;
@@ -718,7 +718,7 @@ const CONFIG = {
   consentText: "Ja, jeg vil motta nyhetsbrev og tilbud fra Trackday på e-post. Du kan melde deg av når som helst.",
   rulesUrl: "https://trackday.no/konkurranseregler",
   privacyUrl: "https://trackday.no/personvern",
-  logoUrl: "https://www.trackday.no/static/version1790664050/frontend/Trackday/ultimo_child/nb_NO/images/logo.png", // Tomt = tekstlogo
+  logoUrl: "/logo-jul.svg", // Tomt = tekstlogo
   siteUrl: "https://trackday.no",
   shareUrl: "https://julekalender.trackday.no",
   giftcardUrl: "https://www.trackday.no/supertilbud.html"
@@ -1157,7 +1157,8 @@ function lights(){
   box.innerHTML=`<svg viewBox="0 0 ${W} 26" preserveAspectRatio="none"><defs><radialGradient id="lg"><stop offset="0" stop-color="#ffe2a8" stop-opacity=".9"/><stop offset=".35" stop-color="#ffd27a" stop-opacity=".35"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient></defs><path d="${d}" stroke="rgba(255,255,255,.14)" stroke-width="1" fill="none"/>${bulbs}</svg>`;
 }
 lights(); addEventListener("resize", lights);
-const addLogoHat=()=>{ if(!$("#logo .hat")) $("#logo").insertAdjacentHTML("afterbegin", HAT); };
+// Nisselua er tegnet inn i logo-jul.svg. Bare tekstlogoen (reserve hvis bildet ikke laster) får lue lagt oppå.
+const addLogoHat=()=>{ if(!$("#logo img") && !$("#logo .hat")) $("#logo").insertAdjacentHTML("afterbegin", HAT); };
 addLogoHat(); new MutationObserver(addLogoHat).observe($("#logo"),{childList:true});
 
 setPrelaunch();
